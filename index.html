@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#FFDDE6">
+  <title>A Journey Back to Us — For Vanya</title>
+  <style>
+    /* ====== Basic mobile optimizations & resets ====== */
+    :root{
+      --bg1: linear-gradient(160deg,#FFF6F9 0%, #FFF0EE 35%, #FFF6D6 100%);
+      --accent:#FF758F;
+      --accent2:#FFC7C7;
+      --muted:#6c6c6c;
+      --card-bg: rgba(255,255,255,0.85);
+      --glass: rgba(255,255,255,0.6);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color-scheme: light;
+    }
+    html,body{height:100%;margin:0;-webkit-text-size-adjust:100%;}
+    body{
+      background: var(--bg1);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      touch-action: manipulation; /* mobile: default touch handling */
+      -ms-touch-action: manipulation;
+      overflow:hidden;
+    }
+
+    /* ====== App container ====== */
+    .app{
+      width:100%;
+      max-width:900px;
+      min-height:560px;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      border-radius:18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.85), transparent 15%),
+                  linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.6));
+      overflow:hidden;
+      position:relative;
+    }
+
+    header{
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+      border-bottom:1px solid rgba(0,0,0,0.04);
+    }
+    .logo{
+      width:46px;height:46px;border-radius:12px;
+      background: linear-gradient(135deg, #FFD1DC, #FF9AA8);
+      display:flex;align-items:center;justify-content:center;font-size:20px;
+      box-shadow: 0 4px 14px rgba(255,117,143,0.18);
+    }
+    header h1{font-size:16px;margin:0}
+    header p{margin:0;color:var(--muted);font-size:12px}
+
+    main{
+      padding:18px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    /* progress bar */
+    .progress{
+      display:flex;align-items:center;gap:10px;padding:8px 6px;
+    }
+    .progress .bar{
+      flex:1;height:10px;background:linear-gradient(90deg,#ffecec,#fff3f0);
+      border-radius:10px;overflow:hidden;
+      box-shadow: inset 0 -2px 6px rgba(0,0,0,0.03);
+    }
+    .progress .bar > .fill{
+      height:100%; width:0%; background: linear-gradient(90deg,var(--accent),#FFB3C0);
+      transition: width 600ms cubic-bezier(.2,.9,.2,1);
+    }
+    .progress .label{font-size:12px;color:var(--muted);white-space:nowrap}
+
+    /* cards / screens */
+    .card{
+      background:var(--card-bg);
+      padding:16px;border-radius:14px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.06);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .center{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center}
+
+    h2{margin:0;font-size:18px}
+    p{margin:0;color:var(--muted);line-height:1.45}
+
+    /* choices */
+    .choices{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .btn{
+      min-height:50px; /* touch target >=44px */
+      padding:12px 14px;border-radius:12px;border:0;font-size:16px;
+      background:linear-gradient(180deg,var(--accent),#FF97A7);
+      color:white;font-weight:600;box-shadow: 0 6px 18px rgba(255,117,143,0.18);
+      outline:none; touch-action:manipulation;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+    }
+    .btn.secondary{
+      background:linear-gradient(180deg,#FFFFFF,#FFF0F2); color:var(--accent);
+      border:1px solid rgba(255,117,143,0.12);
+      box-shadow:none;font-weight:700;
+    }
+    .btn.ghost{
+      background:transparent;color:var(--muted);border:1px solid rgba(0,0,0,0.05);
+    }
+
+    .small{font-size:13px;padding:10px;border-radius:10px}
+    .muted{color:var(--muted);font-size:14px}
+
+    /* mini-game grid (memory) */
+    .grid{display:grid;gap:10px;justify-items:center;align-items:center}
+    .memory-grid{grid-template-columns:repeat(4,1fr); grid-auto-rows: 72px;}
+    .card-tile{
+      width:100%;height:100%;border-radius:10px;background:var(--glass);
+      display:flex;align-items:center;justify-content:center;font-size:28px;user-select:none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06); transition: transform 220ms ease, opacity 200ms;
+      transform-origin:center; touch-action: manipulation;
+    }
+    .card-tile.flipped{background:linear-gradient(135deg,#FFF0F2,#FFF6F0);transform:rotateY(0deg)}
+    .card-tile.hidden{opacity:0;transform:scale(0.95);pointer-events:none}
+
+    /* puzzle unscramble */
+    .letters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+    .letter{
+      min-width:48px;min-height:48px; padding:10px;border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,0.06);
+      display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;touch-action: manipulation;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+    }
+    .slot{min-width:40px;min-height:42px;border-radius:8px;background:rgba(255,255,255,0.6);border:1px dashed rgba(0,0,0,0.06);display:inline-flex;align-items:center;justify-content:center;padding:6px}
+
+    /* tiny helper */
+    .meta{font-size:12px;color:var(--muted)}
+
+    footer{padding:12px 16px;border-top:1px solid rgba(0,0,0,0.03);display:flex;gap:8px;align-items:center;justify-content:space-between;background:transparent}
+
+    /* responsive tweaks */
+    @media (max-width:520px){
+      .app{border-radius:14px}
+      .card-tile{font-size:26px}
+    }
+
+    /* animations */
+    .floaty{
+      animation: floaty 5s ease-in-out infinite;
+    }
+    @keyframes floaty {
+      0%{transform: translateY(0)}
+      50%{transform: translateY(-8px)}
+      100%{transform: translateY(0)}
+    }
+
+    /* small confetti sprinkle */
+    .confetti{
+      position:absolute;left:10px;right:10px;top:40px;pointer-events:none;opacity:0;transition:opacity 400ms;
+    }
+    .confetti.show{opacity:1}
+    .heart{
+      display:inline-block;font-size:20px;transform:scale(1);transition:transform 300ms;
+    }
+    .heart.pop{transform:scale(1.25)}
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="A Journey Back to Us — for Vanya">
+    <header>
+      <div class="logo" aria-hidden>💌</div>
+      <div>
+        <h1>A Journey Back to Us</h1>
+        <p>Created by Prateek — for Vanya</p>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="meta">Progress</div>
+        <div style="font-weight:700">Chapter <span id="chapterNum">0</span>/5</div>
+      </div>
+    </header>
+
+    <div class="progress" aria-hidden>
+      <div class="bar" aria-hidden><div class="fill" id="progressFill"></div></div>
+      <div class="label" id="progressLabel">0%</div>
+    </div>
+
+    <main id="main">
+      <!-- Screens will be rendered here via JS -->
+    </main>
+
+    <footer>
+      <div class="meta">Tap choices to play • Large buttons for easy tapping</div>
+      <div style="text-align:right">
+        <button id="helpBtn" class="btn ghost small" style="min-height:40px">Help</button>
+      </div>
+    </footer>
+
+    <div class="confetti" id="confettiContainer" aria-hidden></div>
+  </div>
+
+<script>
+/*
+  A Journey Back to Us
+  Single-file mobile-optimized HTML game.
+  Author: Generated for Prateek -> Vanya
+
+  Structure:
+  - Game state stored in `state`
+  - Screens are rendered by small functions
+  - Includes:
+    * Intro choice (letter vs adventure)
+    * Chapter 1: Memory & apology choices
+    * Chapter 2: Memory matching mini-game (emoji cards)
+    * Chapter 3: Story choices with branching
+    * Chapter 4: Unscramble puzzle that unlocks a love letter
+    * Chapter 5: Finale with hidden easter-egg and celebratory confetti
+  - Throttle clicks to avoid rapid double activation
+*/
+
+/* ======= Utility helpers ======= */
+const $ = sel => document.querySelector(sel);
+const debounce = (fn, ms=300) => {
+  let t=0; return (...a)=>{ const now = Date.now(); if(now - t < ms) return; t=now; fn(...a); }
+}
+function el(tag, attrs={}, children=[]){
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==='class') e.className = v;
+    else if(k==='text') e.textContent = v;
+    else if(k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k,v);
+  });
+  (Array.isArray(children)?children:[children]).forEach(c=>{ if(!c) return; if(typeof c === 'string') e.appendChild(document.createTextNode(c)); else e.appendChild(c); });
+  return e;
+}
+
+/* ======= Game state ======= */
+const state = {
+  chapter: 0,
+  choices: [], // record choices for branching
+  matchedPairs: 0,
+  memoryPairsTotal: 4,
+  memoryCards: [],
+  fillProgress(){ return Math.round((this.chapter / 5) * 100) },
+  secretFound: false
+};
+
+/* ======= DOM refs ======= */
+const main = $('#main');
+const chapterNum = $('#chapterNum');
+const progressFill = $('#progressFill');
+const progressLabel = $('#progressLabel');
+const confettiContainer = $('#confettiContainer');
+
+/* ======= Throttled navigation ======= */
+const go = debounce(nextScreen, 220);
+
+/* ======= App screens ======= */
+
+function updateProgress(){
+  chapterNum.textContent = Math.min(5, Math.max(0, state.chapter));
+  const w = state.fillProgress();
+  progressFill.style.width = w + '%';
+  progressLabel.textContent = w + '%';
+}
+
+/* Renders the intro / opening screen */
+function renderIntro(){
+  state.chapter = 0; updateProgress();
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('div',{class:'floaty'},[
+      el('h2',{text:"Welcome to 'A Journey Back to Us'"}),
+      el('p',{text:"This little adventure is for you, Vanya. It's me — Prateek — trying to say sorry and show how much I love you. Start where you feel comfortable."})
+    ]),
+    el('div',{class:'choices'},[
+      el('button',{class:'btn', onclick:()=>go(()=>startWithLetter())}, ["✉️ Start with a letter"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>startAdventure())}, ["🌿 Begin the adventure"])
+    ]),
+    el('div',{class:'muted', style:'margin-top:8px'}, ["Tip: you can tap anywhere large — the game is designed for phones."])
+  ]);
+  main.appendChild(card);
+}
+
+/* Start path: Start with a letter (short route into apology) */
+function startWithLetter(){
+  state.chapter = 1; updateProgress();
+  main.innerHTML = '';
+  const card = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"A letter, for Vanya"}),
+      el('p',{text:"Dear Vanya — I wanted to start by saying I'm sorry. I realise my words and actions hurt you. This letter is me trying to show that I understand and that I care."}),
+    ]),
+    el('div',{class:'choices'},[
+      el('button',{class:'btn', onclick:()=>go(()=>afterLetterChoice('apology') )}, ["I feel the apology"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>afterLetterChoice('memory') )}, ["Remind me of a memory"])
+    ]),
+    el('div',{class:'muted', style:'margin-top:10px'}, ["(Hidden: tap the heart above the header quickly 4 times for a secret.)"])
+  ]);
+  main.appendChild(card);
+}
+
+/* Start path: Begin the adventure (chapter-driven path) */
+function startAdventure(){
+  state.chapter = 1; updateProgress();
+  state.choices = [];
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('h2',{text:"A path through our moments"}),
+    el('p',{text:"You walk down a warm path. Each step is a memory. Choose how we begin — gently or honestly?"}),
+    el('div',{class:'choices'},[
+      el('button',{class:'btn', onclick:()=>go(()=>chooseTone('gentle'))}, ["Gently — start soft"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>chooseTone('honest'))}, ["Honestly — say it plainly"])
+    ])
+  ]);
+  main.appendChild(card);
+}
+
+/* After starting with letter: both choices converge to a shared flow */
+function afterLetterChoice(choice){
+  state.choices.push({chapter:1, choice});
+  // move to memory matching (chapter 2)
+  state.chapter = 2; updateProgress();
+  renderMemoryIntro();
+}
+
+/* adventure choice sets a flag and proceeds similarly */
+function chooseTone(t){
+  state.choices.push({chapter:1, choice:t});
+  state.chapter = 2; updateProgress();
+  renderMemoryIntro();
+}
+
+/* Chapter 2 intro — memory matching mini-game explained */
+function renderMemoryIntro(){
+  main.innerHTML = '';
+  const card = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"Chapter 2 — Shared Moments"}),
+      el('p',{text:"Let's play a quick memory game: match the cards. Each pair reveals a small memory or a short message. Match all to move forward."})
+    ]),
+    el('div',{class:'choices'},[
+      el('button',{class:'btn', onclick:()=>go(()=>startMemoryGame())}, ["Start memory game"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>skipMemory())}, ["Skip (I promise to be gentle)"])
+    ])
+  ]);
+  main.appendChild(card);
+}
+
+/* skip option gracefully continues */
+function skipMemory(){
+  state.chapter = 3; updateProgress();
+  renderStoryChapter();
+}
+
+/* Memory game implementation */
+function startMemoryGame(){
+  // generate pairs (emojis/messages). We keep assets small (emoji & tiny text).
+  const pairs = [
+    {id:1, face:'☕', msg:"First coffee together? I remember the laugh you made."},
+    {id:2, face:'🌧️', msg:"The rainy evening — you held the umbrella like a shield."},
+    {id:3, face:'🎵', msg:"That song we both hummed on a long drive."},
+    {id:4, face:'🗺️', msg:"Planning silly future trips with maps and mismatched hats."}
+  ];
+  // shuffle and duplicate
+  let cards = [];
+  pairs.forEach(p=>{ cards.push({...p, uid: p.id + 'a'}); cards.push({...p, uid: p.id + 'b'}); });
+  cards = cards.sort(()=>Math.random()-0.5);
+  state.memoryPairsTotal = pairs.length;
+  state.matchedPairs = 0;
+  state.memoryCards = cards; // store current order
+
+  renderMemoryBoard(cards);
+}
+
+function renderMemoryBoard(cards){
+  main.innerHTML = '';
+  const cardWrap = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"Match the moments"}),
+      el('p',{text:"Tap two cards. If they match, you'll see a memory."})
+    ])
+  ]);
+  // grid container
+  const grid = el('div',{class:'grid memory-grid', style:'margin-top:12px'});
+  // ensure tile size by JS: we'll create 8 tiles
+  cards.forEach((c, idx)=>{
+    const tile = el('button',{
+      class:'card-tile',
+      'aria-label': 'memory card',
+      onclick: () => flipTile(idx)
+    }, ['❓']);
+    tile.dataset.uid = c.uid;
+    grid.appendChild(tile);
+  });
+
+  // area for revealed message
+  const revealArea = el('div',{style:'margin-top:12px'},[
+    el('div',{class:'muted', id:'revealText', text:'Matches reveal a memory.'})
+  ]);
+
+  // small controls
+  const controls = el('div',{class:'choices', style:'margin-top:12px'},[
+    el('button',{class:'btn small', onclick:()=>go(()=>restartMemory())}, ['Restart']),
+    el('button',{class:'btn secondary small', onclick:()=>go(()=>skipMemory())}, ['Skip'])
+  ]);
+
+  cardWrap.appendChild(grid);
+  cardWrap.appendChild(revealArea);
+  cardWrap.appendChild(controls);
+  main.appendChild(cardWrap);
+
+  // internal game variables
+  let flipped = [];
+  let lock = false;
+
+  window.flipTile = function(i){
+    if(lock) return;
+    const gridTiles = main.querySelectorAll('.card-tile');
+    const tileNode = gridTiles[i];
+    if(!tileNode || tileNode.classList.contains('flipped') || tileNode.classList.contains('hidden')) return;
+
+    // show face
+    const face = state.memoryCards[i].face;
+    tileNode.classList.add('flipped');
+    tileNode.textContent = face;
+    flipped.push({index:i, uid: state.memoryCards[i].uid, pairId: state.memoryCards[i].id});
+
+    if(flipped.length === 2){
+      lock = true;
+      setTimeout(()=>{
+        const a = flipped[0], b = flipped[1];
+        if(a.pairId === b.pairId){
+          // match!
+          const m = state.memoryCards[a.index].msg;
+          state.matchedPairs++;
+          tileNode.classList.add('hidden');
+          gridTiles[a.index].classList.add('hidden');
+          $('#revealText').textContent = m;
+          // little pop animation
+          tileNode.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:360});
+          // proceed if complete
+          if(state.matchedPairs >= state.memoryPairsTotal){
+            setTimeout(()=> {
+              state.chapter = 3; updateProgress();
+              renderStoryChapter();
+            }, 900);
+          }
+        } else {
+          // flip back
+          gridTiles[a.index].textContent = '❓';
+          gridTiles[a.index].classList.remove('flipped');
+          tileNode.textContent = '❓';
+          tileNode.classList.remove('flipped');
+          $('#revealText').textContent = "Not a match — try again, Vanya ♥";
+        }
+        flipped = [];
+        lock = false;
+      }, 700);
+    }
+  }
+}
+
+function restartMemory(){
+  startMemoryGame();
+}
+
+/* Chapter 3: Story choices, branching depending on earlier choices */
+function renderStoryChapter(){
+  state.chapter = 3; updateProgress();
+  main.innerHTML = '';
+  // create subtle branching message using past choices
+  const firstChoice = state.choices.find(c=>c.chapter===1)?.choice || 'gentle';
+  const introMsg = (firstChoice === 'honest') ?
+     "You chose honesty — so I will be plain. I know I made mistakes; here's how I want to fix them." :
+     "You chose gentle — so I'll go slowly. I want to hold your hand and say I'm sorry, and really mean it.";
+
+  const card = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"Chapter 3 — A Conversation"}),
+      el('p',{text:introMsg}),
+      el('p',{class:'muted', text:"Choose how I respond to you — with action, with memory, or with a promise."})
+    ]),
+    el('div',{class:'choices'},[
+      el('button',{class:'btn', onclick:()=>go(()=>recordChoiceAndProceed('action'))}, ["Show action — small changes"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>recordChoiceAndProceed('memory'))}, ["Share another memory"]),
+      el('button',{class:'btn ghost', onclick:()=>go(()=>recordChoiceAndProceed('promise'))}, ["Make a promise"])
+    ])
+  ]);
+  main.appendChild(card);
+}
+
+function recordChoiceAndProceed(choice){
+  state.choices.push({chapter:3, choice});
+  // proceed to puzzle (chapter 4) which unveils a love letter
+  state.chapter = 4; updateProgress();
+  renderPuzzleIntro();
+}
+
+/* Chapter 4 Intro: setup for puzzle */
+function renderPuzzleIntro(){
+  main.innerHTML = '';
+  const card = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"Chapter 4 — A little puzzle"}),
+      el('p',{text:"Solve this simple word puzzle to unlock the next letter. It's about a name that means a lot to me."})
+    ]),
+    el('div',{class:'choices', style:'margin-top:12px'},[
+      el('button',{class:'btn', onclick:()=>go(()=>renderUnscramble('VANYA'))}, ["Solve puzzle"]),
+      el('button',{class:'btn secondary', onclick:()=>go(()=>skipPuzzle())}, ["Skip puzzle"])
+    ])
+  ]);
+  main.appendChild(card);
+}
+
+function skipPuzzle(){
+  // if user skips, still show the letter but with a note
+  state.chapter = 5; updateProgress();
+  renderFinale({skipped:true});
+}
+
+/* Simple unscramble puzzle - user taps letters to form target word */
+function renderUnscramble(targetWord='VANYA'){
+  const letters = targetWord.split('');
+  // add random filler letters to increase difficulty a bit
+  const fillers = ['E','L','O','P','R'];
+  let pool = [...letters, ...fillers.slice(0, Math.max(0, 3))].sort(()=>Math.random()-0.5);
+
+  main.innerHTML = '';
+  const card = el('div',{class:'card'},[
+    el('div',{class:'center'},[
+      el('h2',{text:"Unscramble to reveal the letter"}),
+      el('p',{text:"Tap letters in order to form a word — you'll unlock a message when correct."})
+    ]),
+    el('div',{style:'margin-top:12px;text-align:center'},[
+      el('div',{id:'slots', style:'margin-bottom:12px'},[])
+    ])
+  ]);
+  // slot area
+  const slotsDiv = card.querySelector('#slots');
+  const slotRow = el('div',{style:'display:flex;gap:8px;justify-content:center;flex-wrap:wrap'});
+  for(let i=0;i<targetWord.length;i++){
+    slotRow.appendChild(el('div',{class:'slot', id:'slot'+i, text:''}));
+  }
+  slotsDiv.appendChild(slotRow);
+
+  // letter pool
+  const poolWrap = el('div',{class:'letters'});
+  pool.forEach((L, idx)=>{
+    const btn = el('button',{class:'letter', onclick:()=>pickLetter(idx)}, [L]);
+    btn.dataset.letter = L;
+    btn.dataset.index = idx;
+    poolWrap.appendChild(btn);
+  });
+
+  // controls
+  const controls = el('div',{class:'choices', style:'margin-top:12px'},[
+    el('button',{class:'btn small', onclick:()=>go(()=>resetUnscramble())}, ['Reset']),
+    el('button',{class:'btn secondary small', onclick:()=>go(()=>giveHint())}, ['Hint'])
+  ]);
+
+  main.appendChild(card);
+  card.appendChild(poolWrap);
+  card.appendChild(controls);
+
+  // puzzle variables
+  let current = [];
+
+  function pickLetter(i){
+    const chosen = poolWrap.querySelector(`.letter[data-index="${i}"]`);
+    if(!chosen || chosen.disabled) return;
+    // find next empty slot
+    const sIdx = current.length;
+    if(sIdx >= targetWord.length) return;
+    const slot = slotsDiv.querySelector('#slot'+sIdx);
+    slot.textContent = chosen.dataset.letter;
+    chosen.disabled = true;
+    chosen.style.opacity = '0.5';
+    current.push(chosen.dataset.letter);
+    checkWord();
+  }
+
+  function resetUnscramble(){
+    current = [];
+    const lettersBtns = poolWrap.querySelectorAll('.letter');
+    lettersBtns.forEach(b=>{ b.disabled=false; b.style.opacity='1'; });
+    for(let i=0;i<targetWord.length;i++) slotsDiv.querySelector('#slot'+i).textContent = '';
+  }
+
+  function giveHint(){
+    // reveal the first correct letter
+    const first = targetWord.charAt(0);
+    resetUnscramble();
+    // auto pick first letter in pool that matches
+    for(let i=0;i<pool.length;i++){
+      if(pool[i] === first) {
+        pickLetter(i); break;
+      }
+    }
+  }
+
+  function checkWord(){
+    if(current.length !== targetWord.length) return;
+    const formed = current.join('');
+    if(formed === targetWord){
+      // success: show love letter and proceed
+      revealLetter(formed);
+    } else {
+      // small shake feedback then reset a bit
+      const slots = slotsDiv.querySelectorAll('.slot');
+      slotsDiv.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:360});
+      setTimeout(()=>resetUnscramble(),700);
+    }
+  }
+
+  // expose functions for buttons (debounced)
+  window.resetUnscramble = resetUnscramble;
+  window.giveHint = giveHint;
+}
+
+/* Reveal letter after puzzle or skip */
+function revealLetter(word){
+  // We can use 'word' (VANYA) and display heartfelt message
+  state.chapter = 5; updateProgress();
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('h2',{text:"A letter unlocked"}),
+    el('p',{text:`Vanya — you mean the world to me. ${word} — a short symbol of how special you are.`}),
+    el('p',{class:'muted', text:"This letter is short, but each line is true. Read slowly."})
+  ]);
+
+  const letterText = el('div',{style:'margin-top:12px;text-align:left;padding:8px;border-radius:10px;background:linear-gradient(180deg,#FFF7F7,#FFF6F8)'},[
+    el('p',{text:"Vanya,"}),
+    el('p',{text:"I am sorry. I’ve thought about what happened, and I understand how my actions made you feel. I don't want to lose the warmth we have."}),
+    el('p',{text:"I promise to listen, to be patient, and to show love with small, consistent things — not just words."}),
+    el('p',{text:"Thank you for your kindness, your laugh, and the way you make ordinary things feel magical."}),
+    el('p',{text:"Love, Prateek 💫"})
+  ]);
+  card.appendChild(letterText);
+
+  // final choices
+  const controls = el('div',{class:'choices', style:'margin-top:12px'},[
+    el('button',{class:'btn', onclick:()=>go(()=>finaleCelebrate())}, ['Open the final surprise']),
+    el('button',{class:'btn secondary', onclick:()=>go(()=>renderFinale({skipped:false}))}, ['I want to read slowly'])
+  ]);
+  card.appendChild(controls);
+  main.appendChild(card);
+}
+
+/* Finale – celebratory, with hidden messages and a heartfelt ending */
+function renderFinale(opts={}){
+  state.chapter = 5; updateProgress();
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('h2',{text:"Finale — To Vanya"}),
+    el('p',{text: opts.skipped ? "You chose to skip some parts, but the heart is honest." : "You solved the puzzle — thank you for playing with me."}),
+    el('p',{class:'muted', text:"There's a small surprise: find the hidden message."})
+  ]);
+
+  // a memory timeline + virtual gifts
+  const timeline = el('div',{style:'margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center'},[
+    gift('☕','First Coffee'),
+    gift('🌧️','Rainy Umbrella'),
+    gift('🎶','That Song'),
+    gift('🗺️','Dream Trip')
+  ]);
+  card.appendChild(timeline);
+
+  const endNote = el('div',{style:'margin-top:12px'},[
+    el('p',{text:"Vanya — I hope this made you smile. I'm sorry, truly. I love you and want to build better days together."}),
+    el('p',{class:'muted', text:"(Tap the hearts above the gifts to reveal a small hidden note.)"})
+  ]);
+  card.appendChild(endNote);
+
+  // final action
+  const controls = el('div',{class:'choices', style:'margin-top:12px'},[
+    el('button',{class:'btn', onclick:()=>go(()=>showPromise())}, ['I promise — start anew']),
+    el('button',{class:'btn secondary', onclick:()=>go(()=>restartGame())}, ['Play again'])
+  ]);
+  card.appendChild(controls);
+  main.appendChild(card);
+}
+
+/* Helper to create gift nodes with hidden notes */
+function gift(emoji, label){
+  const wrap = el('div',{style:'width:120px;padding:10px;border-radius:12px;background:linear-gradient(180deg,#fff,#fff8f8);text-align:center;box-shadow:0 6px 18px rgba(0,0,0,0.04)'},[
+    el('div',{class:'heart', text:emoji, onclick:()=>revealSecret(wrap)}, []),
+    el('div',{class:'muted', style:'margin-top:6px', text:label}),
+    el('div',{class:'muted', style:'margin-top:8px;display:none', }, [""]) // placeholder for secret text
+  ]);
+  return wrap;
+}
+
+function revealSecret(node){
+  // toggle: reveal hidden message on the gift
+  const note = node.querySelectorAll('.muted')[1]; // 2nd muted
+  if(!note) return;
+  if(note.textContent.trim()){
+    // already shown -> animate heart
+    const heart = node.querySelector('.heart');
+    heart.classList.add('pop');
+    setTimeout(()=>heart.classList.remove('pop'), 420);
+    return;
+  }
+  note.style.display = 'block';
+  // small personalized messages — hidden memories / inside lines
+  const messages = [
+    "Secret: you beat me at that coffee trivia — I brag about it.",
+    "Secret: I still love how you tuck your hair behind your ear in the rain.",
+    "Secret: That song is my alarm now — I smile every time.",
+    "Secret: I still plan little trips in my head with you."
+  ];
+  // pick one depending on index
+  const idx = Math.floor(Math.random()*messages.length);
+  note.textContent = messages[idx];
+  // gentle confetti show
+  showConfetti();
+}
+
+/* small confetti: simple hearts (no external libs) */
+function showConfetti(){
+  confettiContainer.innerHTML = '';
+  const n = 12;
+  for(let i=0;i<n;i++){
+    const span = document.createElement('div');
+    span.textContent = '💖';
+    span.style.position = 'absolute';
+    span.style.left = (10 + Math.random()*80) + '%';
+    span.style.top = (Math.random()*20) + '%';
+    span.style.fontSize = (12 + Math.random()*18) + 'px';
+    span.style.opacity = '0';
+    span.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
+    confettiContainer.appendChild(span);
+    const delay = Math.random()*300;
+    setTimeout(()=> {
+      span.style.transition = 'transform 900ms cubic-bezier(.2,.9,.2,1), opacity 600ms';
+      span.style.opacity = '1';
+      span.style.transform = `translateY(${120 + Math.random()*160}px) rotate(${Math.random()*160}deg)`;
+      setTimeout(()=>span.style.opacity = '0', 700 + Math.random()*500);
+    }, delay);
+  }
+  confettiContainer.classList.add('show');
+  setTimeout(()=> confettiContainer.classList.remove('show'), 1600);
+}
+
+/* final promise action */
+function showPromise(){
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('h2',{text:"A promise — from Prateek to Vanya"}),
+    el('p',{text:"I promise to keep listening, to apologize when I'm wrong, and to work every day to be the partner you deserve."}),
+    el('p',{text:"Will you give me another chance to show it?"})
+  ]);
+  const controls = el('div',{class:'choices', style:'margin-top:12px'},[
+    el('button',{class:'btn', onclick:()=>go(()=>conclude(true))}, ['Yes, lets try']),
+    el('button',{class:'btn secondary', onclick:()=>go(()=>conclude(false))}, ['I need time'])
+  ]);
+  card.appendChild(controls);
+  main.appendChild(card);
+}
+
+function conclude(accepted){
+  main.innerHTML = '';
+  if(accepted){
+    const card = el('div',{class:'card center'},[
+      el('h2',{text:"Thank you, Vanya 💕"}),
+      el('p',{text:"I promise I'll earn this. Let's make new memories."}),
+      el('p',{class:'muted', text:"(Tap the screen to celebrate)"}),
+      el('div',{style:'height:12px'})
+    ]);
+    const btn = el('button',{class:'btn', onclick:()=>go(()=>finalCelebration())}, ['Celebrate 🎉']);
+    card.appendChild(btn);
+    main.appendChild(card);
+  } else {
+    const card = el('div',{class:'card center'},[
+      el('h2',{text:"I understand"}), el('p',{text:"Take all the time you need. I'll be here, ready to listen and to change."})
+    ]);
+    const btn = el('button',{class:'btn', onclick:()=>restartGame()}, ['Return to start']);
+    card.appendChild(btn);
+    main.appendChild(card);
+  }
+}
+
+function finalCelebration(){
+  // big heart pop and confetti
+  main.innerHTML = '';
+  const card = el('div',{class:'card center'},[
+    el('div',{style:'font-size:64px'},['💖']),
+    el('h2',{text:"A new beginning"}),
+    el('p',{text:"Thank you for reading, for playing, for listening."}),
+    el('p',{class:'muted', text:"Love, Prateek"})
+  ]);
+  main.appendChild(card);
+  showConfetti();
+}
+
+/* Restart game / play again */
+function restartGame(){
+  state.chapter = 0;
+  state.choices = [];
+  updateProgress();
+  renderIntro();
+}
+
+/* small helper: restart from beginning on page load or replay */
+function start(){
+  updateProgress();
+  renderIntro();
+}
+
+/* global help button */
+$('#helpBtn').addEventListener('click', ()=> {
+  alert("How to use:\n\n• Tap large buttons to progress.\n• Match cards, solve the puzzle, and tap little hearts to see hidden notes.\n• Designed for mobile — if something misbehaves, try reloading the page.");
+});
+
+/* hidden easter: expose secret if user taps header logo quickly */
+/* header logo is first div.logo */
+document.querySelector('.logo').addEventListener('click', (function(){
+  let taps = 0; let t = null;
+  return function(){
+    taps++;
+    if(t) clearTimeout(t);
+    t = setTimeout(()=>{ taps = 0; }, 900);
+    if(taps >= 4){
+      taps = 0;
+      // reveal a quick private note
+      alert("Vanya — secret note: Remember the rooftop? That was the night I knew I wanted us. — Prateek");
+      state.secretFound = true;
+    }
+  }
+})());
+
+/* prevent multiple rapid touches on document from causing bugs */
+document.addEventListener('touchstart', function(evt){
+  // stop default double-tap zoom in some browsers
+  if(evt.touches && evt.touches.length > 1) evt.preventDefault();
+}, {passive:false});
+
+/* handle basic back navigation prevention (soft) */
+window.addEventListener('popstate', ()=>{ /* no-op: app is single page */ });
+
+/* initial launch */
+start();
+
+</script>
+</body>
+</html>
