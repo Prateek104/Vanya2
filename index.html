@@ -265,6 +265,11 @@ const progressLabel = $('#progressLabel');
 const confettiContainer = $('#confettiContainer');
 
 /* ======= Throttled navigation ======= */
+function nextScreen(fn) {
+  if (typeof fn === 'function') {
+    fn();
+  }
+}
 const go = debounce(nextScreen, 220);
 
 /* ======= App screens ======= */
